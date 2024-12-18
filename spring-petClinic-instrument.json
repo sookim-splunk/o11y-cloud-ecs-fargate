@@ -1,0 +1,176 @@
+{
+    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:<account_id>:task-definition/spring-petclinic-td:7",
+    "containerDefinitions": [
+        {
+            "name": "spring-petclinic",
+            "image": "<account_id>.dkr.ecr.ap-northeast-2.amazonaws.com/spring-petclinic:latest",
+            "cpu": 0,
+            "portMappings": [
+                {
+                    "name": "8080",
+                    "containerPort": 8080,
+                    "hostPort": 8080,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "OTEL_SERVICE_NAME",
+                    "value": "spring-petclinic"
+                },
+                {
+                    "name": "JAVA_TOOL_OPTIONS",
+                    "value": "-javaagent:/opt/splunk/splunk-otel-javaagent.jar"
+                },
+                {
+                    "name": "OTEL_RESOURCE_ATTRIBUTES",
+                    "value": "deployment.environment=test,service.version=1.0"
+                }
+            ],
+            "mountPoints": [],
+            "volumesFrom": [
+                {
+                    "sourceContainer": "splunk-java-agent",
+                    "readOnly": false
+                }
+            ],
+            "dependsOn": [
+                {
+                    "containerName": "splunk-java-agent",
+                    "condition": "START"
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "splunk",
+                "options": {
+                    "splunk-url": "https://http-inputs-<cloud_name>.splunkcloud.com",
+                    "splunk-sourcetype": "httpevent",
+                    "splunk-source": "<data_source>",
+                    "splunk-token": "<hec_token>",
+                    "splunk-index": "<index>"
+                }
+            },
+            "systemControls": []
+        },
+        {
+            "name": "splunk-otel-collector",
+            "image": "quay.io/signalfx/splunk-otel-collector:latest",
+            "cpu": 0,
+            "portMappings": [],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "SPLUNK_CONFIG",
+                    "value": "/etc/otel/collector/fargate_config.yaml"
+                },
+                {
+                    "name": "SPLUNK_REALM",
+                    "value": "<realm>"
+                },
+                {
+                    "name": "SPLUNK_ACCESS_TOKEN",
+                    "value": "<ingest_token>"
+                },
+                {
+                    "name": "ECS_METADATA_EXCLUDED_IMAGES",
+                    "value": "[\"quay.io/signalfx/splunk-otel-collector:latest\"]"
+                }
+            ],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "logConfiguration": {
+                "logDriver": "splunk",
+                "options": {
+                    "splunk-url": "https://http-inputs-<cloud_name>.splunkcloud.com",
+                    "splunk-sourcetype": "httpevent",
+                    "splunk-source": "<data_source>",
+                    "splunk-token": "<hec_token>",
+                    "splunk-index": "<index>"
+                }
+            },
+            "systemControls": []
+        },
+        {
+            "name": "splunk-java-agent",
+            "image": "<account_id>.dkr.ecr.ap-northeast-2.amazonaws.com/splunk-java-agent:latest",
+            "cpu": 0,
+            "portMappings": [],
+            "essential": false,
+            "environment": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "logConfiguration": {
+                "logDriver": "splunk",
+                "options": {
+                    "splunk-url": "https://http-inputs-<cloud_name>.splunkcloud.com",
+                    "splunk-sourcetype": "httpevent",
+                    "splunk-source": "<data_source>",
+                    "splunk-token": "<hec_token>",
+                    "splunk-index": "<index>"
+                }
+            },
+            "systemControls": []
+        }
+    ],
+    "family": "spring-petclinic-td",
+    "executionRoleArn": "arn:aws:iam::<account_id>:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "revision": 7,
+    "volumes": [],
+    "status": "ACTIVE",
+    "requiresAttributes": [
+        {
+            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+        },
+        {
+            "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.28"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.logging-driver.splunk"
+        },
+        {
+            "name": "ecs.capability.container-ordering"
+        },
+        {
+            "name": "ecs.capability.execution-role-ecr-pull"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        },
+        {
+            "name": "ecs.capability.task-eni"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
+        }
+    ],
+    "placementConstraints": [],
+    "compatibilities": [
+        "EC2",
+        "FARGATE"
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "256",
+    "memory": "512",
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "registeredAt": "2024-12-18T06:41:29.174Z",
+    "registeredBy": "arn:aws:sts::<account_id>:assumed-role/AWSReservedSSO_SPLKAdministratorAccess_b9b6c88da8caa60e/sookyungk@splunk.com",
+    "enableFaultInjection": false,
+    "tags": []
+}
